@@ -408,8 +408,27 @@ function FlowBuilder() {
             <header className="flex items-center justify-between px-6 py-3 bg-[#13112b] border-b border-[#2d2b55] z-10 flex-shrink-0">
                 {/* Logo + title */}
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-node select-none">
-                        <span className="text-white text-sm font-bold">BF</span>
+                    <div className="w-9 h-9 rounded-xl overflow-hidden shadow-node select-none flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" className="w-full h-full">
+                            <defs>
+                                <linearGradient id="hbg" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%" stopColor="#818cf8" />
+                                    <stop offset="100%" stopColor="#4338ca" />
+                                </linearGradient>
+                                <linearGradient id="hbub" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0.28" />
+                                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0.10" />
+                                </linearGradient>
+                            </defs>
+                            <rect width="64" height="64" rx="15" fill="url(#hbg)" />
+                            <rect x="9" y="10" width="46" height="32" rx="9" fill="url(#hbub)" stroke="white" strokeOpacity="0.35" strokeWidth="1.4" />
+                            <path d="M14 42 L10 52 L22 45" fill="url(#hbub)" stroke="white" strokeOpacity="0.35" strokeWidth="1.4" strokeLinejoin="round" />
+                            <rect x="19" y="21" width="8" height="8" rx="4" fill="white" fillOpacity="0.9" />
+                            <rect x="37" y="21" width="8" height="8" rx="4" fill="white" fillOpacity="0.9" />
+                            <circle cx="23" cy="25" r="2.2" fill="#4338ca" />
+                            <circle cx="41" cy="25" r="2.2" fill="#4338ca" />
+                            <rect x="22" y="33" width="20" height="3.5" rx="1.75" fill="white" fillOpacity="0.6" />
+                        </svg>
                     </div>
                     <h1 className="text-base font-semibold text-white tracking-tight select-none">
                         Chatbot <span className="text-brand-400">Flow Builder</span>

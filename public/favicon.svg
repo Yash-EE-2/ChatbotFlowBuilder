@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#4338ca"/>
+    </linearGradient>
+    <linearGradient id="bubble" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.10"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded background tile -->
+  <rect width="64" height="64" rx="15" fill="url(#bg)"/>
+
+  <!-- Chat bubble body -->
+  <rect x="9" y="10" width="46" height="32" rx="9" fill="url(#bubble)" stroke="white" stroke-opacity="0.35" stroke-width="1.4"/>
+
+  <!-- Bubble tail -->
+  <path d="M14 42 L10 52 L22 45" fill="url(#bubble)" stroke="white" stroke-opacity="0.35" stroke-width="1.4" stroke-linejoin="round"/>
+
+  <!-- Bot "eyes" — two rounded rects -->
+  <rect x="19" y="21" width="8" height="8" rx="4" fill="white" fill-opacity="0.9"/>
+  <rect x="37" y="21" width="8" height="8" rx="4" fill="white" fill-opacity="0.9"/>
+
+  <!-- Pupil dots -->
+  <circle cx="23" cy="25" r="2.2" fill="#4338ca"/>
+  <circle cx="41" cy="25" r="2.2" fill="#4338ca"/>
+
+  <!-- Bot "mouth" — small rounded bar -->
+  <rect x="22" y="33" width="20" height="3.5" rx="1.75" fill="white" fill-opacity="0.6"/>
+</svg>

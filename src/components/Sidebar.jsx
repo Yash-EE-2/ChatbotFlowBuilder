@@ -5,6 +5,15 @@
  * The sidebar shows a curated list of node types that users can drag onto
  * the React Flow canvas to build their chatbot flow.
  *
+ * Drawer behaviour
+ * ────────────────
+ * The sidebar can be collapsed (hidden) or expanded (visible) by clicking
+ * the toggle button that sits on the panel's right edge.
+ * Collapsed state:  sidebar slides off-screen (translateX(-100%)); a
+ *                   floating "open drawer" tab remains visible so the user
+ *                   can reopen it at any time.
+ * Expanded state:   standard 240 px side panel.
+ *
  * Drag-and-drop protocol
  * ──────────────────────
  * 1. `DraggableNode.onDragStart` writes the node type string (e.g. "textNode")
@@ -19,8 +28,8 @@
  * 3. Register the component in App.jsx's nodeTypes useMemo.
  */
 
-import React from 'react';
-import { MessageSquare, Image, Zap, HelpCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { MessageSquare, Image, Zap, HelpCircle, ChevronLeft, ChevronRight, Layers } from 'lucide-react';
 
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -78,13 +87,6 @@ const NODE_TYPES = [
    ─────────────
    Renders a single palette card. Draggable only when `available` is true.
 
-   The drag-start handler sets two dataTransfer properties:
-     • 'application/reactflow' → the node type string (read by App.onDrop)
-     • effectAllowed → 'move'  → tells the OS to show a move cursor
-
-   Unavailable nodes are rendered with `draggable={false}` and a "Soon"
-   badge — they are purely decorative placeholders showing the product roadmap.
-
    @param {object}   props
    @param {string}   props.type        — Node type identifier
    @param {string}   props.label       — Display name
@@ -95,38 +97,27 @@ const NODE_TYPES = [
 ───────────────────────────────────────────────────────────────────────── */
 function DraggableNode({ type, label, description, icon: Icon, gradient, available }) {
 
-    /**
-     * Sets drag data so App.onDrop knows what kind of node to create.
-     * Returning early when !available prevents drag on disabled cards
-     * even if the user somehow bypasses the draggable={false} attribute.
-     *
-     * @param {React.DragEvent} event
-     */
     const onDragStart = (event) => {
         if (!available) return;
-        // Store the node type string — App.onDrop reads this
         event.dataTransfer.setData('application/reactflow', type);
-        // Signal the OS that this is a move operation (not copy)
         event.dataTransfer.effectAllowed = 'move';
     };
 
     return (
         <div
-            draggable={available}        /* false = OS drag system is disabled */
+            draggable={available}
             onDragStart={onDragStart}
             title={available ? `Drag to add a ${label} node` : 'Coming soon'}
             className={`
                 group relative flex items-center gap-3 p-3.5 rounded-xl border
                 transition-all duration-200
                 ${available
-                    /* Active card: dark bg, indigo border on hover, grab cursor */
                     ? 'bg-[#1a1740] border-[#2d2b55] cursor-grab hover:border-brand-500 hover:shadow-node active:scale-95'
-                    /* Inactive card: muted, not-allowed cursor */
                     : 'bg-[#141230] border-[#1e1b4b] opacity-50 cursor-not-allowed'
                 }
             `}
         >
-            {/* Coloured icon badge — gradient matches the node's header colour */}
+            {/* Coloured icon badge */}
             <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0`}>
                 <Icon size={16} className="text-white" />
             </div>
@@ -137,14 +128,14 @@ function DraggableNode({ type, label, description, icon: Icon, gradient, availab
                 <p className="text-xs text-slate-500 truncate">{description}</p>
             </div>
 
-            {/* "Soon" badge — only on unavailable nodes */}
+            {/* "Soon" badge */}
             {!available && (
                 <span className="absolute top-2 right-2 text-[10px] font-semibold bg-[#2d2b55] text-brand-300 px-1.5 py-0.5 rounded-full">
                     Soon
                 </span>
             )}
 
-            {/* "drag" hint — fades in on hover to teach new users the interaction */}
+            {/* "drag" hint on hover */}
             {available && (
                 <span className="absolute right-3 text-[10px] font-medium text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity">
                     drag
@@ -158,45 +149,97 @@ function DraggableNode({ type, label, description, icon: Icon, gradient, availab
 /* ─────────────────────────────────────────────────────────────────────────
    Sidebar — the exported component
    ──────────────────────────────────
-   A flex column that takes a fixed width (w-60) and contains:
-     1. A header with the "Node Library" label and subtitle.
-     2. A scrollable list of DraggableNode cards.
-     3. A sticky footer tip reminding the user of the one-outgoing-edge rule.
+   Wraps the panel in a relative container so the toggle tab can be
+   absolutely positioned just outside the panel's right edge.
 
    @param {object} props
    @param {Set}    props.nodesWithOutgoing — Set of node IDs that already
-                   have an outgoing edge (passed from App for potential future
-                   use, e.g. to visually mark "fully connected" nodes).
+                   have an outgoing edge.
 ───────────────────────────────────────────────────────────────────────── */
 export default function Sidebar({ nodesWithOutgoing }) {
+    const [open, setOpen] = useState(true);
+
     return (
-        <aside className="w-60 flex-shrink-0 bg-[#13112b] border-r border-[#2d2b55] flex flex-col overflow-hidden">
+        /* Outer positioning shell — does NOT shrink; the inner aside handles width */
+        <div className="relative flex-shrink-0" style={{ zIndex: 20 }}>
 
-            {/* Section heading */}
-            <div className="px-4 pt-5 pb-3">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-brand-400 mb-1">
-                    Node Library
-                </p>
-                <p className="text-xs text-slate-500">Drag nodes onto the canvas</p>
-            </div>
+            {/* ── Drawer panel ───────────────────────────────────────────── */}
+            <aside
+                style={{
+                    width: '240px',
+                    transform: open ? 'translateX(0)' : 'translateX(-100%)',
+                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: open ? 'relative' : 'absolute',
+                    top: 0,
+                    left: 0,
+                    height: '100%',
+                }}
+                className="bg-[#13112b] border-r border-[#2d2b55] flex flex-col overflow-hidden"
+                aria-hidden={!open}
+            >
+                {/* Section heading */}
+                <div className="px-4 pt-5 pb-3 flex items-center justify-between">
+                    <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-brand-400 mb-1">
+                            Node Library
+                        </p>
+                        <p className="text-xs text-slate-500">Drag nodes onto the canvas</p>
+                    </div>
+                    {/* Collapse button inside the panel */}
+                    <button
+                        onClick={() => setOpen(false)}
+                        title="Collapse sidebar"
+                        aria-label="Collapse sidebar"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#2d2b55] transition-colors flex-shrink-0"
+                    >
+                        <ChevronLeft size={15} />
+                    </button>
+                </div>
 
-            {/* Horizontal rule separating header from the node list */}
-            <div className="mx-4 h-px bg-[#2d2b55]" />
+                {/* Horizontal rule */}
+                <div className="mx-4 h-px bg-[#2d2b55]" />
 
-            {/* Scrollable node palette — grows to fill remaining height */}
-            <div className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-2.5">
-                {NODE_TYPES.map((node) => (
-                    /* key = type string, which is guaranteed unique in NODE_TYPES */
-                    <DraggableNode key={node.type} {...node} />
-                ))}
-            </div>
+                {/* Scrollable node palette */}
+                <div className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-2.5">
+                    {NODE_TYPES.map((node) => (
+                        <DraggableNode key={node.type} {...node} />
+                    ))}
+                </div>
 
-            {/* Sticky footer — connection rule reminder at a glance */}
-            <div className="px-4 py-3 border-t border-[#2d2b55] bg-[#0f0f1a]/50">
-                <p className="text-[11px] text-slate-600 leading-snug">
-                    💡 Each node can have only <span className="text-brand-400 font-medium">one outgoing</span> connection.
-                </p>
-            </div>
-        </aside>
+                {/* Sticky footer tip */}
+                <div className="px-4 py-3 border-t border-[#2d2b55] bg-[#0f0f1a]/50">
+                    <p className="text-[11px] text-slate-600 leading-snug">
+                        💡 Each node can have only <span className="text-brand-400 font-medium">one outgoing</span> connection.
+                    </p>
+                </div>
+            </aside>
+
+            {/* ── Floating open-tab (shown only when collapsed) ──────────── */}
+            {!open && (
+                <button
+                    onClick={() => setOpen(true)}
+                    title="Open Node Library"
+                    aria-label="Open sidebar"
+                    style={{
+                        position: 'fixed',
+                        left: 0,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        zIndex: 30,
+                    }}
+                    className="
+                        flex flex-col items-center gap-1.5
+                        px-1.5 py-4 rounded-r-xl
+                        bg-[#13112b] border border-l-0 border-[#2d2b55]
+                        text-brand-400 hover:text-white hover:bg-[#1e1b4b]
+                        shadow-panel transition-all duration-200
+                        group
+                    "
+                >
+                    <Layers size={15} />
+                    <ChevronRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                </button>
+            )}
+        </div>
     );
 }
