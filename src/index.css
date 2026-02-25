@@ -1,0 +1,120 @@
+/* ─── React Flow base styles (must come before @tailwind directives) ─── */
+@import 'reactflow/dist/style.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', ui-sans-serif, system-ui;
+    background: #0f0f1a;
+    color: #e2e8f0;
+  }
+}
+
+/* ─── Custom scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4338ca;
+  border-radius: 999px;
+}
+
+/* ─── React Flow canvas background ─── */
+.react-flow__background {
+  background: #0f0f1a;
+}
+
+.react-flow__controls {
+  background: #1e1b4b;
+  border: 1px solid #312e81;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.react-flow__controls button {
+  background: #1e1b4b;
+  border: none;
+  color: #a5b4fc;
+}
+
+.react-flow__controls button:hover {
+  background: #312e81;
+  color: #fff;
+}
+
+.react-flow__minimap {
+  background: #1e1b4b !important;
+  border: 1px solid #312e81;
+  border-radius: 12px;
+}
+
+/* ─── Edge styles ─── */
+.react-flow__edge-path {
+  stroke: #818cf8;
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #a5b4fc;
+}
+
+.react-flow__connection-path {
+  stroke: #6366f1;
+  stroke-dasharray: 5 5;
+}
+
+/* ─── Connection-line colour while dragging ─── */
+.react-flow__connection-line {
+  stroke: #6366f1;
+}
+
+/* ─── Handle invalid-connection highlight ─── */
+.react-flow__handle-connecting {
+  background: #f43f5e !important;
+}
+
+.react-flow__handle-valid {
+  background: #34d399 !important;
+}
+
+/* ─── Fade-in for toast ─── */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out forwards;
+}
+
+/* ─── Prevent React Flow from dragging inside nodrag elements ─── */
+.react-flow__node .nodrag {
+  cursor: text;
+}
