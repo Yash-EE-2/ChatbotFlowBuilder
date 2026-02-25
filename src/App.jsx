@@ -39,6 +39,7 @@ import Sidebar from './components/Sidebar.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import SaveButton from './components/SaveButton.jsx';
 import CustomTextNode from './components/CustomTextNode.jsx';
+import CustomEdge from './components/CustomEdge.jsx';
 
 /* ─────────────────────────────────────────────────────────────────────────
    CONSTANTS — defined at module level so they are created once, not on
@@ -164,6 +165,7 @@ function FlowBuilder() {
                 addEdge(
                     {
                         ...params,
+                        type: 'custom',           // use our CustomEdge renderer
                         animated: true,
                         style: { stroke: '#818cf8', strokeWidth: 2 },
                         markerEnd: { type: MarkerType.ArrowClosed, color: '#818cf8' },
@@ -385,6 +387,12 @@ function FlowBuilder() {
         [onNodeDataChange] // recreate only if onNodeDataChange reference changes
     );
 
+    /**
+     * Stable edge-type map — same reasoning as nodeTypes above.
+     * 'custom' maps to CustomEdge which shows the hover/click tooltip.
+     */
+    const edgeTypes = useMemo(() => ({ custom: CustomEdge }), []);
+
 
     /* ─────────────────────────────────────────────────────────────────────
        RENDER
@@ -469,8 +477,12 @@ function FlowBuilder() {
                     <ReactFlow
                         nodes={nodes}
                         edges={edges}
+                        edgeTypes={edgeTypes}           // custom edge with hover tooltip
                         onNodesChange={onNodesChange}   // built-in: drag, select, delete
                         onEdgesChange={onEdgesChange}   // built-in: select, delete
+                        onEdgeDoubleClick={(_event, edge) =>
+                            setEdges((eds) => eds.filter((e) => e.id !== edge.id))
+                        }  // double-click an edge to instantly remove it
                         onConnect={onConnect}           // fires after isValidConnection passes
                         isValidConnection={isValidConnection} // fires before onConnect
                         onDrop={onDrop}                 // handles node drop from sidebar
@@ -483,10 +495,13 @@ function FlowBuilder() {
                         className="bg-[#0f0f1a]"
                         attributionPosition="bottom-left"
                         deleteKeyCode={['Backspace', 'Delete']} // keyboard node/edge deletion
+                        edgesUpdatable={true}   // allow dragging edge endpoints to reconnect
+                        edgesFocusable={true}   // allow edges to be focused/selected via keyboard
                         /* Style applied to the live connection line while dragging */
                         connectionLineStyle={{ stroke: '#6366f1', strokeDasharray: '6 3', strokeWidth: 2 }}
                         /* Default visual properties applied to every new edge */
                         defaultEdgeOptions={{
+                            type: 'custom',       // use CustomEdge with hover tooltip
                             animated: true,
                             style: { stroke: '#818cf8', strokeWidth: 2 },
                             markerEnd: { type: MarkerType.ArrowClosed, color: '#818cf8' },
