@@ -93,7 +93,7 @@ npm install
 npm run dev
 ```
 
-The app will be available at **https://vercel.com/yashs-projects-cf669bd6/chatbot-flow-builder**.
+The app will be available at **https://chatbot-flow-builder-five-rho.vercel.app/**.
 
 ### Build for Production
 
